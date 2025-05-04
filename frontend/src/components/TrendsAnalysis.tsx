@@ -1,12 +1,41 @@
 import { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+// Definición de tipos para el análisis de tendencias
+interface Opportunity {
+  id: string | number;
+  title: string;
+  justification: string;
+  suggestedTitles: string[];
+  approach?: string;
+}
+
+interface Competitor {
+  url: string;
+  titles?: string[];
+  error?: string;
+}
+
+interface TrendsData {
+  timelineData: Array<{
+    value: number[];
+  }>;
+  keywords: string[];
+  opportunities: Opportunity[];
+  recentArticles?: string[];
+}
+
+interface AnalysisResults {
+  trends: TrendsData;
+  competitors?: Competitor[];
+}
+
 export default function TrendsAnalysis() {
   const [loading, setLoading] = useState(false);
   const [niche, setNiche] = useState('');
   const [keywords, setKeywords] = useState('');
   const [competitorUrls, setCompetitorUrls] = useState('');
-  const [analysisResults, setAnalysisResults] = useState(null);
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResults | null>(null);
   const [error, setError] = useState('');
 
   // Predefined niches for dropdown
@@ -50,8 +79,8 @@ export default function TrendsAnalysis() {
 
       const data = await response.json();
       setAnalysisResults(data);
-    } catch (err) {
-      setError(err.message || 'Error al analizar tendencias');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error al analizar tendencias');
     } finally {
       setLoading(false);
     }
@@ -61,10 +90,10 @@ export default function TrendsAnalysis() {
   const prepareTrendsData = () => {
     if (!analysisResults?.trends?.timelineData) return [];
     
-    return analysisResults.trends.timelineData.map((point, index) => {
-      const dataPoint = { name: `Semana ${index + 1}` };
+    return analysisResults.trends.timelineData.map((point, index: number) => {
+      const dataPoint: { [key: string]: string | number } = { name: `Semana ${index + 1}` };
       
-      analysisResults.trends.keywords.forEach((keyword, i) => {
+      analysisResults.trends.keywords.forEach((keyword: string, i: number) => {
         dataPoint[keyword] = point.value[i];
       });
       
@@ -73,7 +102,7 @@ export default function TrendsAnalysis() {
   };
 
   // Generar colores para cada línea del gráfico
-  const getLineColor = (index) => {
+  const getLineColor = (index: number): string => {
     const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F'];
     return colors[index % colors.length];
   };
@@ -151,7 +180,7 @@ export default function TrendsAnalysis() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  {analysisResults.trends.keywords.map((keyword, index) => (
+                  {analysisResults.trends.keywords.map((keyword: string, index: number) => (
                     <Line 
                       key={keyword}
                       type="monotone"
@@ -170,7 +199,7 @@ export default function TrendsAnalysis() {
             <h2 className="text-lg font-semibold mb-4">Oportunidades Detectadas</h2>
             
             <div className="space-y-4">
-              {analysisResults.trends.opportunities.map((opportunity) => (
+              {analysisResults.trends.opportunities.map((opportunity: Opportunity) => (
                 <div 
                   key={opportunity.id} 
                   className="border-l-4 border-green-500 pl-4 py-2"
@@ -181,7 +210,7 @@ export default function TrendsAnalysis() {
                   <div className="mt-3">
                     <p className="font-medium text-sm text-gray-700">Títulos sugeridos:</p>
                     <ul className="list-disc list-inside text-sm mt-1">
-                      {opportunity.suggestedTitles.map((title, i) => (
+                      {opportunity.suggestedTitles.map((title: string, i: number) => (
                         <li key={i} className="text-gray-800">{title}</li>
                       ))}
                     </ul>
@@ -213,7 +242,7 @@ export default function TrendsAnalysis() {
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-lg font-semibold mb-2">Artículos Recientes en el Nicho</h2>
               <ul className="list-disc list-inside text-sm space-y-1">
-                {analysisResults.trends.recentArticles.map((article, i) => (
+                {analysisResults.trends.recentArticles.map((article: string, i: number) => (
                   <li key={i} className="text-gray-800">{article}</li>
                 ))}
               </ul>
@@ -225,7 +254,7 @@ export default function TrendsAnalysis() {
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-lg font-semibold mb-4">Análisis de Competidores</h2>
               
-              {analysisResults.competitors.map((competitor, index) => (
+              {analysisResults.competitors.map((competitor: Competitor, index: number) => (
                 <div key={index} className="mb-4">
                   <h3 className="font-medium">{new URL(competitor.url).hostname}</h3>
                   
@@ -233,7 +262,7 @@ export default function TrendsAnalysis() {
                     <p className="text-red-500 text-sm">{competitor.error}</p>
                   ) : (
                     <ul className="list-disc list-inside text-sm mt-1">
-                      {competitor.titles.map((title, i) => (
+                      {competitor.titles?.map((title: string, i: number) => (
                         <li key={i} className="text-gray-800">{title}</li>
                       ))}
                     </ul>
