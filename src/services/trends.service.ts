@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { Injectable, Logger } from '@nestjs/common';
 import { DeepseekService } from './deepseek.service';
+import { TrendsResponse, TrendOpportunity } from '../dto/trends-dto';
 
 @Injectable()
 export class TrendsService {
@@ -9,7 +10,7 @@ export class TrendsService {
 
   constructor(private readonly deepseekService: DeepseekService) {}
 
-  async getTrendsForNiche(niche: string, keywords: string[]): Promise<any> {
+  async getTrendsForNiche(niche: string, keywords: string[]): Promise<TrendsResponse> {
     try {
       const trendsData = await this.getBasicTrends(keywords);
       const articles = await this.getRecentArticles(niche, 5);
@@ -35,7 +36,10 @@ export class TrendsService {
     }
   }
 
-  private async getRecentArticles(niche: string, limit: number = 5): Promise<{ title: string; link: string; pubDate: string; source: string }[]> {
+  private async getRecentArticles(
+    niche: string,
+    limit: number = 5,
+  ): Promise<{ title: string; link: string; pubDate: string; source: string }[]> {
     try {
       const response = await axios.get(
         `https://news.google.com/rss/search?q=${encodeURIComponent(niche)}&hl=es`,
@@ -62,7 +66,12 @@ export class TrendsService {
     }
   }
 
-  private async analyzeOpportunities(niche: string, keywords: string[], trendsData: any, articles: any[]): Promise<any> {
+  private async analyzeOpportunities(
+    niche: string,
+    keywords: string[],
+    trendsData: any,
+    articles: { title: string; link: string; pubDate: string; source: string }[],
+  ): Promise<TrendsResponse> {
     const processedTrends = this.processTrendsData(trendsData);
     const articleTopics = articles.map(article => article.title);
     const opportunitiesPrompt = `
@@ -79,7 +88,7 @@ export class TrendsService {
     `;
     const aiAnalysis = await this.deepseekService.generateCompletion(opportunitiesPrompt);
     try {
-      const opportunities = JSON.parse(aiAnalysis);
+      const opportunities: TrendOpportunity[] = JSON.parse(aiAnalysis);
       return {
         niche,
         keywords,
@@ -99,7 +108,7 @@ export class TrendsService {
     }
   }
 
-  private processTrendsData(trendsData: any): any {
+  private processTrendsData(trendsData: any): { trendingKeywords: { keyword: string; growth: number }[]; timelineData: any[] } {
     try {
       const timelineData = trendsData?.default?.timelineData || [];
       const trendingKeywords: { keyword: string; growth: number }[] = [];
@@ -121,18 +130,18 @@ export class TrendsService {
       };
     } catch (error: unknown) {
       this.logger.error(`Error al procesar datos de tendencias: ${(error as Error).message}`);
-      return { trendingKeywords: [] };
+      return { trendingKeywords: [], timelineData: [] };
     }
   }
 
-  private extractOpportunitiesFromText(text: string): { id: number; title: string; description: string; suggestedTitles: string[] }[] {
-    const opportunities: { id: number; title: string; description: string; suggestedTitles: string[] }[] = [];
-    const opportunityMatches = text.match(/oportunidad.*?(?=oportunidad|$)/gi) || []; // Cambiado 'gis' a 'gi'
+  private extractOpportunitiesFromText(text: string): TrendOpportunity[] {
+    const opportunities: TrendOpportunity[] = [];
+    const opportunityMatches = text.match(/oportunidad.*?(?=oportunidad|$)/gi) || [];
     opportunityMatches.forEach((match: string, index: number) => {
       opportunities.push({
         id: index + 1,
         title: match.split('\n')[0].replace(/oportunidad\s*\d+:\s*/i, '').trim(),
-        description: match,
+        justification: match,
         suggestedTitles: [`Título sugerido para oportunidad ${index + 1}`],
       });
     });

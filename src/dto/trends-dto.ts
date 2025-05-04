@@ -1,15 +1,14 @@
-// src/dto/trends.dto.ts
-import { IsString, IsArray, IsOptional, IsUrl, ArrayMaxSize, ArrayMinSize } from 'class-validator';
+import { IsString, IsArray, IsOptional, IsUrl, ArrayMaxSize, ArrayMinSize, IsNumber } from 'class-validator';
 
 export class AnalyzeNicheDto {
   @IsString()
-  niche: string;
+  niche!: string;
 
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(7)
   @IsString({ each: true })
-  keywords: string[];
+  keywords!: string[];
 
   @IsOptional()
   @IsArray()
@@ -19,18 +18,44 @@ export class AnalyzeNicheDto {
 }
 
 export class TrendOpportunity {
-  id: number;
-  title: string;
-  justification: string;
+  @IsNumber()
+  id!: number;
+
+  @IsString()
+  title!: string;
+
+  @IsString()
+  justification!: string;
+
+  @IsOptional()
+  @IsNumber()
   growth?: number;
-  suggestedTitles: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  suggestedTitles!: string[];
+
+  @IsOptional()
+  @IsString()
   approach?: string;
 }
 
 export class TrendsResponse {
-  niche: string;
-  keywords: string[];
-  trendingKeywords: Array<{keyword: string, growth: number}>;
-  opportunities: TrendOpportunity[];
+  @IsString()
+  niche!: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  keywords!: string[];
+
+  @IsArray()
+  trendingKeywords!: Array<{ keyword: string; growth: number }>;
+
+  @IsArray()
+  opportunities!: TrendOpportunity[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   recentArticles?: string[];
 }

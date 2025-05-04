@@ -2,7 +2,7 @@
   "name": "trends-analyzer-frontend",
   "version": "1.0.0",
   "description": "Frontend para el análisis de tendencias con DeepSeek",
-  "main": "index.js",
+  
   "scripts": {
     "start": "parcel src/index.html",
     "build": "parcel build src/index.html",
