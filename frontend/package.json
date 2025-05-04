@@ -1,18 +1,28 @@
 {
-  "name": "frontend",
+  "name": "trends-analyzer-frontend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Frontend para el análisis de tendencias con DeepSeek",
   "main": "index.js",
   "scripts": {
+    "start": "parcel src/index.html",
+    "build": "parcel build src/index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "keywords": [
+    "trends",
+    "analysis",
+    "deepseek",
+    "react"
+  ],
   "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "recharts": "^2.15.3"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "recharts": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "parcel": "^2.8.3",
+    "typescript": "^4.9.5"
   }
 }
