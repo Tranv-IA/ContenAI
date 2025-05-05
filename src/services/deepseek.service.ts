@@ -4,7 +4,7 @@ import axios from 'axios';
 @Injectable()
 export class DeepseekService {
   private readonly logger = new Logger(DeepseekService.name);
-  private readonly apiKey = process.env.DEEPSEEK_API_KEY || 'tu-api-key-aquí';
+  private readonly apiKey = process.env.DEEPSEEK_API_KEY || 'sk-bc65b3cfb70b41bab6b2535c4ac90e4a';
   private readonly apiUrl = 'https://api.deepseek.com/v1/chat/completions';
 
   async generateCompletion(prompt: string): Promise<string> {
